@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/v1/update-user
+Content-Type: application/json
+
+{
+
+    "email": "aopoku265@gmail.com",
+    "password": "Proff@0545"
+   
+}
