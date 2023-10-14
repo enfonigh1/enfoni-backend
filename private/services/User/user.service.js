@@ -2,6 +2,7 @@ const { uploadFile } = require("../Firebase/imageUpload.service");
 const User = require("../../schema/User");
 
 async function updateUser(req) {
+  console.log(req?.body)
   try {
     const image_url = await uploadFile(req.file, "enfoni");
 
@@ -9,11 +10,11 @@ async function updateUser(req) {
       {
         _id: req?.body?.id,
       },
-      { image: image_url }
+      { ...req?.body }
     );
 
     if (result != null) {
-      return { message: "success", image_url };
+      return { message: "success", data: result };
     }
     return { message: "failed to update profile image, try again" };
   } catch (error) {

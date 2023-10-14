@@ -5,6 +5,7 @@ const cors = require("cors");
 const router = require("express").Router();
 const routes = require("./routes/v1/router");
 const session = require("express-session");
+const cookieParser = require("cookie-parser")
 app.use(express.json());
 const keys = require("../keys.json");
 require("dotenv").config();
@@ -21,6 +22,8 @@ app.use(
     saveUninitialized: true,
   })
 );
+
+app.use(cookieParser())
 app.use("", routes);
 
 app.listen(PORT, console.log(`APP RUNNING ON ${PORT}`));

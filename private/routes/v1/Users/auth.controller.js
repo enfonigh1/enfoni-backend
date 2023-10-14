@@ -45,9 +45,16 @@ router.post("/signup", async (req, res) => {
       phone_number: phone_number,
       date_of_graduation: date_of_graduation,
     });
-    const saveUser = await user.save();
-    if (saveUser) {
-      return res.json({ status: 200, message: "User created successfully" });
+    try {
+
+      const saveUser = await user.save();
+      if (saveUser) {
+        await sendMail(email, "Welcome to enfonigh")
+
+        return res.json({ status: 200, message: "User created successfully" });
+      }
+    } catch (error) {
+
     }
   } else {
     const user = new User({
@@ -55,9 +62,15 @@ router.post("/signup", async (req, res) => {
       email: email,
       password: encrypted(password),
     });
-    const saveUser = await user.save();
-    if (saveUser) {
-      return res.json({ status: 200, message: "User created successfully" });
+    try {
+      const saveUser = await user.save();
+      if (saveUser) {
+        await sendMail(email, "Welcome to Enfonigh")
+        return res.json({ status: 200, message: "User created successfully" });
+      }
+
+    } catch (error) {
+
     }
   }
 });
@@ -78,8 +91,9 @@ router.post("/signin", async (req, res) => {
   const validPass = await bcrypt.compareSync(password, user?.password);
   if (!validPass) return res.json({ status: 400, message: "Invalid password" });
   const accessToken = await generateTokens(user);
-  req.session.token = accessToken;
-  const token = req?.session?.token;
+  res?.cookie('token', accessToken, { maxAge: 3600000, httpOnly: true });
+  // req.session.token = accessToken;
+  const token = req?.cookies?.token;
 
   return res.json({
     status: 200,
@@ -92,6 +106,7 @@ router.post("/signin", async (req, res) => {
     image: user?.image,
     user_id: user?._id,
     admin: user?.admin,
+    phone_number: user?.phone_number
   });
 });
 
@@ -165,9 +180,14 @@ router.post("/admin-signup", async (req, res) => {
     password: encrypted(password),
     admin: true
   });
-  const saveUser = await user.save();
-  if (saveUser) {
-    return res.json({ status: 200, message: "User created successfully" });
+  try {
+    const saveUser = await user.save();
+    if (saveUser) {
+      await sendMail()
+      return res.json({ status: 200, message: "User created successfully" });
+    }
+  } catch (err) {
+    return res.json({ status: 400, message: err });
   }
 });
 

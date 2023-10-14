@@ -1,24 +1,25 @@
 /* eslint-disable */
 const nodemailer = require("nodemailer");
+require("dotenv").config()
 
 const sendMail = (email, mailBody) =>
   new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      host: "smtp.gmail.com",
+      // host: "smtp.gmail.com",
       auth: {
-        user: "aopoku255@gmail.com",
-        pass: "Prof...0545098438",
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.EMAIL_PASS,
       },
-      //   secure: true,
-      //   tls: {
-      //     servername: "gmail.com",
-      //   },
+      // secure: true,
+      // tls: {
+      //   servername: "gmail.com",
+      // },
     });
 
     const mailOptions = {
-      from: "aopoku255@gmail.com",
-      to: `${email}`,
+      from: "replyus.app@gmail.com",
+      to: email,
       subject: "enfoni",
       text: mailBody,
     };

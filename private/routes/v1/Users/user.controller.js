@@ -10,14 +10,14 @@ const fileUpload = multer({ dest: "/tmp" }).single("file");
 router.put("/update-user", verify, upload, async (req, res, next) => {
   try {
     return res.status(200).json(await updateUser(req));
-  } catch (error) {}
+  } catch (error) { }
 });
 
 // Payment
 router.post("/payment", verify, upload, async (req, res, next) => {
   try {
     return res.status(200).json(await payment(req));
-  } catch (error) {}
+  } catch (error) { }
 });
 
 module.exports = router;
