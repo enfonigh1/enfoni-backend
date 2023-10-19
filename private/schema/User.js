@@ -18,16 +18,35 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    student_id: {
+    session: {
       type: String,
       required: false,
     },
+    faculty: {
+      type: String,
+      required: false,
+    },
+
+    gown: {
+      type: Boolean,
+      required: false,
+    },
+    photoshoot: {
+      type: Boolean,
+      required: false,
+    },
+
+
+    // student_id: {
+    //   type: String,
+    //   required: false,
+    // },
     phone_number: {
       type: String,
       required: false,
     },
     date_of_graduation: {
-      type: Date,
+      type: String,
       required: false,
     },
     image: {
@@ -67,7 +86,7 @@ const userSchema = new mongoose.Schema(
     verified: {
       type: Boolean,
       required: false,
-      default: true
+      default: false
     },
     admin: {
       type: Boolean,

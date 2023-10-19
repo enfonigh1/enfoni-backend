@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const User = require("../../../schema/User");
+const jwt = require("jsonwebtoken");
 const {
   registerValidation,
   loginValidation,
@@ -9,8 +10,9 @@ const {
 } = require("./validation/validate");
 const encrypted = require("../../../helpers/encrpted");
 const bcrypt = require("bcrypt");
-const generateTokens = require("../../../helpers/token");
+const { generateTokens } = require("../../../helpers/token");
 const sendMail = require("../../../helpers/sendMail");
+require("dotenv").config();
 
 // REGISTER ENDPOINT
 router.post("/signup", async (req, res) => {
@@ -19,6 +21,7 @@ router.post("/signup", async (req, res) => {
   const student_id = req?.body?.student_id;
   const phone_number = req?.body?.phone_number;
   const date_of_graduation = req?.body?.date_of_graduation;
+
 
   // Validate Request
   const { error } = registerValidation(req.body);
@@ -47,9 +50,20 @@ router.post("/signup", async (req, res) => {
     });
     try {
 
+
+
       const saveUser = await user.save();
+      const { accessToken } = await generateTokens(saveUser);
+      console.log(accessToken)
+      const mailBody = `
+    <h1>Hi ${full_name},</h1>
+    <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
+    <p>Kindly click on the link below to verify your email address.</p>
+    <p>This link expires in 15 minutes.</p>
+    <a href="http://localhost:3001/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    `
       if (saveUser) {
-        await sendMail(email, "Welcome to enfonigh")
+        await sendMail(email, mailBody)
 
         return res.json({ status: 200, message: "User created successfully" });
       }
@@ -57,6 +71,10 @@ router.post("/signup", async (req, res) => {
 
     }
   } else {
+
+
+
+
     const user = new User({
       full_name: full_name,
       email: email,
@@ -64,8 +82,16 @@ router.post("/signup", async (req, res) => {
     });
     try {
       const saveUser = await user.save();
+      const { accessToken } = await generateTokens(saveUser);
+      const mailBody = `
+    <h1>Hi ${full_name},</h1>
+    <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
+    <p>Kindly click on the link below to verify your email address.</p>
+    <p>This link expires in 15 minutes.</p>
+    <a href="http://localhost:3001/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    `
       if (saveUser) {
-        await sendMail(email, "Welcome to Enfonigh")
+        await sendMail(email, mailBody).then(res => console.log("Email sent", res)).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
       }
 
@@ -74,6 +100,25 @@ router.post("/signup", async (req, res) => {
     }
   }
 });
+
+router.get("/verify-email", async (req, res) => {
+  const token = req?.query?.token;
+  // if (!!token) return res.json({ status: 400, message: "Invalid token" });
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findOne({ _id: verified._id });
+    if (user) {
+      const update = await User.updateOne({ _id: verified._id }, { $set: { verified: true } });
+      if (update) {
+        return res.sendFile(__dirname + '/public/index.html')
+        // return res.json({ status: 200, message: "Email verified successfully" });
+      }
+    }
+  } catch (error) {
+    return res.json({ status: 400, message: "Invalid token" });
+  }
+})
 
 // LOGIN ENDPOINT
 router.post("/signin", async (req, res) => {
@@ -90,15 +135,13 @@ router.post("/signin", async (req, res) => {
   // Encrypt Password
   const validPass = await bcrypt.compareSync(password, user?.password);
   if (!validPass) return res.json({ status: 400, message: "Invalid password" });
-  const accessToken = await generateTokens(user);
-  res?.cookie('token', accessToken, { maxAge: 3600000, httpOnly: true });
-  // req.session.token = accessToken;
-  const token = req?.cookies?.token;
+  const { accessToken, refreshToken } = await generateTokens(user);
+  // res?.cookie('token', accessToken, { maxAge: 3600000, httpOnly: true });
 
-  return res.json({
+
+  res.header("auth-token", accessToken).json({
     status: 200,
     message: "Login successful",
-    token: token,
     name: user?.full_name,
     email: user?.email,
     college_name: user?.college_name,
@@ -106,7 +149,14 @@ router.post("/signin", async (req, res) => {
     image: user?.image,
     user_id: user?._id,
     admin: user?.admin,
-    phone_number: user?.phone_number
+    phone_number: user?.phone_number,
+    verified: user?.verified,
+    gown: user?.gown,
+    photoshoot: user?.photoshoot,
+    accessToken,
+    refreshToken,
+    accessTokenExpiresAt: 2592000,
+    refreshTokenExpireAt: 2592000,
   });
 });
 

@@ -6,7 +6,7 @@ const sendMail = (email, mailBody) =>
   new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      // host: "smtp.gmail.com",
+      // host: "smtp.forwardemail.net",
       auth: {
         user: process.env.SENDER_EMAIL,
         pass: process.env.EMAIL_PASS,
@@ -17,11 +17,14 @@ const sendMail = (email, mailBody) =>
       // },
     });
 
+    // write a function to send the mail
+
+
     const mailOptions = {
-      from: "replyus.app@gmail.com",
+      from: "ENFONI GH replyus.app@gmail.com",
       to: email,
-      subject: "enfoni",
-      text: mailBody,
+      subject: "ENFONI GH",
+      html: mailBody,
     };
 
     transporter.sendMail(mailOptions, (error) => {

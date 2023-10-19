@@ -1,4 +1,5 @@
 const axios = require("axios");
+const User = require("../../schema/User");
 require("dotenv").config();
 
 async function payment(req) {
@@ -27,37 +28,54 @@ async function payment(req) {
 }
 
 async function verifyPaystackTransaction(reference) {
-    const headers = {
-      Authorization: "Bearer sk_test_d77ee1491d65f0139a0d0018e7f7f4c0a3500f94",
-      "Content-Type": "application/json",
-      "cache-control": "no-cache",
-    };
-  
-    const options = {
-      headers,
-    };
-  
-    return new Promise((resolve, reject) => {
-      https
-        .get(
-          `https://api.paystack.co/transaction/verify/${reference}`,
-          options,
-          (response) => {
-            let responseData = "";
-  
-            response.on("data", (chunk) => {
-              responseData += chunk;
-            });
-  
-            response.on("end", () => {
-              resolve(responseData);
-            });
-          }
-        )
-        .on("error", (error) => {
-          reject(error);
-        });
-    });
-  }
+  const headers = {
+    Authorization: "Bearer sk_test_d77ee1491d65f0139a0d0018e7f7f4c0a3500f94",
+    "Content-Type": "application/json",
+    "cache-control": "no-cache",
+  };
 
-module.exports = { payment };
+  const options = {
+    headers,
+  };
+
+  return new Promise((resolve, reject) => {
+    https
+      .get(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        options,
+        (response) => {
+          let responseData = "";
+
+          response.on("data", (chunk) => {
+            responseData += chunk;
+          });
+
+          response.on("end", () => {
+            resolve(responseData);
+          });
+        }
+      )
+      .on("error", (error) => {
+        reject(error);
+      });
+  });
+}
+
+
+async function userInfo(req, res) {
+  console.log(req?.params?.user_id)
+  return res.json({ message: "Hello" })
+}
+
+
+async function fetchAllUsers(req, res) {
+
+  try {
+    const results = await User.find();
+    return res.json({ status: 200, data: results });
+  } catch (error) {
+
+  }
+}
+
+module.exports = { payment, userInfo, fetchAllUsers };
