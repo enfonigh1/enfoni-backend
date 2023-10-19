@@ -88,7 +88,7 @@ router.post("/signup", async (req, res) => {
     <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
     <p>Kindly click on the link below to verify your email address.</p>
     <p>This link expires in 15 minutes.</p>
-    <a href="http://localhost:3001/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
       if (saveUser) {
         await sendMail(email, mailBody).then(res => console.log("Email sent", res)).catch(err => console.log(err))
