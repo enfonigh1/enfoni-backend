@@ -49,9 +49,6 @@ router.post("/signup", async (req, res) => {
       date_of_graduation: date_of_graduation,
     });
     try {
-
-
-
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
       console.log(accessToken)
@@ -60,7 +57,7 @@ router.post("/signup", async (req, res) => {
     <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
     <p>Kindly click on the link below to verify your email address.</p>
     <p>This link expires in 15 minutes.</p>
-    <a href="http://localhost:3001/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
       if (saveUser) {
         await sendMail(email, mailBody)
@@ -71,9 +68,6 @@ router.post("/signup", async (req, res) => {
 
     }
   } else {
-
-
-
 
     const user = new User({
       full_name: full_name,
@@ -91,7 +85,7 @@ router.post("/signup", async (req, res) => {
     <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
       if (saveUser) {
-        await sendMail(email, mailBody).then(res => console.log("Email sent", res)).catch(err => console.log(err))
+        await sendMail(email, mailBody)
         return res.json({ status: 200, message: "User created successfully" });
       }
 
@@ -123,14 +117,14 @@ router.get("/verify-email", async (req, res) => {
 // LOGIN ENDPOINT
 router.post("/signin", async (req, res) => {
   const { email, password } = req?.body;
-  const { error } = loginValidation(req.body);
-  if (error) {
-    return res.json({ status: 400, data: error.details[0].message });
-  }
+  // const { error } = loginValidation(req.body);
+  // if (error) {
+  //   return res.json({ status: 400, data: error.details[0].message });
+  // }
 
   //check if email exists & comparing passwords
   const user = await User.findOne({ email: email });
-  if (!user) return res.json({ status: 400, message: "Invalid username" });
+  if (!user) return res.json({ status: 400, message: "Invalid credentials" });
 
   // Encrypt Password
   const validPass = await bcrypt.compareSync(password, user?.password);
