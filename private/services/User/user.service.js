@@ -3,7 +3,7 @@ const User = require("../../schema/User");
 const sendMail = require("../../helpers/sendMail");
 
 async function updateUser(req) {
-  // console.log(req?.body)
+  console.log(req?.body)
   try {
     // const image_url = await uploadFile(req.file, "enfoni");
 
@@ -31,4 +31,28 @@ async function updateUser(req) {
   }
 }
 
-module.exports = { updateUser };
+async function pushCodeBook(req) {
+  const results = await User.find({ _id: req?.body?.id })
+
+  try {
+    if (results && results?.gown === true || results?.photoshoot === true) {
+      if (req?.body?.code === results?._id?.slice(0, 6)?.toUpperCase()) {
+        const result = await User.updateOne(
+          {
+            _id: req?.body?.id,
+          },
+          { gown: true, photoshoot: true }
+        );
+        return { status: 200, data: result };
+      } else {
+        return { status: 400, data: "Invalid code" };
+      }
+    }
+    // return { status: 200, data: result };
+    // return { status: 400, data: "Invalid code" };
+  } catch (error) {
+    return { message: "an error occurred, please try again" };
+  }
+}
+
+module.exports = { updateUser, pushCodeBook };

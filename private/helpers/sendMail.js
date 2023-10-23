@@ -5,7 +5,6 @@ require("dotenv").config()
 const sendMail = (email, mailBody) =>
   new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
-      pool: true,
       host: "mail.enfonigh.com",
       port: 465,
       secure: true,

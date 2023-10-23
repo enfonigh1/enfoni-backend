@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require("../../../schema/User");
 const jwt = require("jsonwebtoken");
+const { v4: uuid } = require("uuid")
 const {
   registerValidation,
   loginValidation,
@@ -12,6 +13,8 @@ const encrypted = require("../../../helpers/encrpted");
 const bcrypt = require("bcrypt");
 const { generateTokens } = require("../../../helpers/token");
 const sendMail = require("../../../helpers/sendMail");
+const RecoveryCode = require("../../../schema/RecoveryCode");
+const getFirstName = require("../../../helpers/retrieve_first_name");
 require("dotenv").config();
 
 // REGISTER ENDPOINT
@@ -54,10 +57,10 @@ router.post("/signup", async (req, res) => {
       console.log(accessToken)
       const mailBody = `
     <h1>Hi ${full_name},</h1>
-    <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
+    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
     <p>Kindly click on the link below to verify your email address.</p>
     <p>This link expires in 15 minutes.</p>
-    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
       if (saveUser) {
         await sendMail(email, mailBody)
@@ -79,13 +82,13 @@ router.post("/signup", async (req, res) => {
       const { accessToken } = await generateTokens(saveUser);
       const mailBody = `
     <h1>Hi ${full_name},</h1>
-    <p>Thank you for registering with <a href="https://enfonigh.com" style="color: green;">Enfonigh</a>. We are excited to have you on board.</p>
+    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
     <p>Kindly click on the link below to verify your email address.</p>
     <p>This link expires in 15 minutes.</p>
     <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
       if (saveUser) {
-        await sendMail(email, mailBody)
+        await sendMail(email, mailBody).then(res => console.log("Email sent")).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
       }
 
@@ -94,6 +97,32 @@ router.post("/signup", async (req, res) => {
     }
   }
 });
+
+router.post("/resend-token", async (req, res) => {
+  const { email } = req?.body;
+  const { error } = emailValidation(req.body);
+  if (error) {
+    return res.json({ status: 400, data: error.details[0].message });
+  }
+
+  // Check if Email Exist
+  const emailExists = await User.findOne({ email: email });
+  if (!emailExists)
+    return res.json({ status: 400, message: "User does not exist" });
+
+  const { accessToken } = await generateTokens(emailExists);
+  const mailBody = `
+    <h1>Hi ${emailExists.full_name},</h1>
+    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+    <p>Kindly click on the link below to verify your email address.</p>
+    <p>This link expires in 15 minutes.</p>
+    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    `
+  if (emailExists) {
+    await sendMail(email, mailBody)
+    return res.json({ status: 200, message: "User created successfully" });
+  }
+})
 
 router.get("/verify-email", async (req, res) => {
   const token = req?.query?.token;
@@ -129,6 +158,8 @@ router.post("/signin", async (req, res) => {
   // Encrypt Password
   const validPass = await bcrypt.compareSync(password, user?.password);
   if (!validPass) return res.json({ status: 400, message: "Invalid password" });
+
+  if (user?.verified === false) return res.json({ status: 400, message: "Please verify your email address", verified: false });
   const { accessToken, refreshToken } = await generateTokens(user);
   // res?.cookie('token', accessToken, { maxAge: 3600000, httpOnly: true });
 
@@ -153,6 +184,77 @@ router.post("/signin", async (req, res) => {
     refreshTokenExpireAt: 2592000,
   });
 });
+
+// send email to user to start password reset process
+router.post("/recover_password", async (req, res) => {
+  const { email } = req.body;
+
+  let code = `${uuid()}`.substring(0, 6).toUpperCase();
+  let first_name = await getFirstName(email);
+  let mail_body = `
+    <h1>Hi ${first_name},</h1>
+    <p>Kindly use the code below to reset your password.</p>
+    <p>This code expires in 15 minutes.</p>
+    <h2>${code}</h2>
+  `;
+
+  // if (email === "") {
+  //   return res.status(400).json({ message: "user email not provided." });
+  // }
+
+  await sendMail(email, mail_body)
+    .then(async (result) => {
+      // set the code sent to the user
+      // this will be validated against to check if user has permission to change
+      // password
+      const codeCreated = await RecoveryCode.create({ email, code })
+      if (codeCreated) {
+        return res.status(200).json({
+          message: "Code sent successfully",
+          data: result,
+        });
+      }
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        message: "Could not send verification code. Try again later.",
+        data: err,
+      });
+    });
+});
+// Make sure to import the RecoveryCode model
+
+// verify password reset verification code sent to the user
+// to allow a user to change their password.
+router.post("/verify_code", async (req, res) => {
+  const { code, email } = req.body;
+
+  const msInMinute = 60 * 1000;
+  const current_date = new Date();
+
+  try {
+    const result = await RecoveryCode.findOne(
+      { email, code },
+      { createdAt: 1 }
+    );
+
+    if (!result) {
+      return res.status(400).json({ message: "Could not verify code. Please try again" });
+    }
+
+    const code_date = new Date(result.createdAt);
+    const time_elapsed = current_date - code_date;
+
+    if (Math.abs(time_elapsed / msInMinute) > 15) {
+      return res.status(400).json({ message: "Code has expired. Please try again" });
+    }
+
+    return res.status(200).json({ message: "Success" });
+  } catch (error) {
+    return res.status(500).json({ message: "Something went wrong", data: error });
+  }
+});
+
 
 // RESET PASSWORD ENPOINT
 router.put("/reset-password", async (req, res) => {

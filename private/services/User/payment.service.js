@@ -78,4 +78,14 @@ async function fetchAllUsers(req, res) {
   }
 }
 
-module.exports = { payment, userInfo, fetchAllUsers };
+async function fetchSingleUser(req, res) {
+  const id = req?.body?.id;
+  try {
+    const results = await User.find({ _id: id });
+    return res.json({ status: 200, data: results[0] });
+  } catch (error) {
+
+  }
+}
+
+module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser };
