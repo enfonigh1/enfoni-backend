@@ -1,6 +1,7 @@
 const { uploadFile } = require("../Firebase/imageUpload.service");
 const User = require("../../schema/User");
 const sendMail = require("../../helpers/sendMail");
+const UserCode = require("../../schema/UserCode");
 
 async function updateUser(req) {
   console.log(req?.body)
@@ -22,7 +23,17 @@ async function updateUser(req) {
       <p>Your order has been received and your code is ${results?.id?.slice(0, 6)?.toUpperCase()}
       please keep this code safe as it will be used to track your order</p>
       `
-      sendMail(results?.email, mailBody)
+      sendMail(results?.email, mailBody).then(async (res) => {
+        try {
+
+          const results = await UserCode.create({ id: req?.body?.id, code: req?.body?.id?.slice(0, 6)?.toUpperCase() })
+          if (results) {
+            return { status: 200, mesage: "success" };
+          }
+        } catch (error) {
+          return { message: "an error occurred, please try again" };
+        }
+      })
       return { status: 200, data: result };
     }
     return { message: "failed to update profile image, try again" };
