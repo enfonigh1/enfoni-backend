@@ -77,7 +77,6 @@ async function fetchAllUsers(req, res) {
 
   }
 }
-
 async function fetchSingleUser(req, res) {
   const id = req?.body?.id;
   try {

@@ -15,6 +15,10 @@ const { generateTokens } = require("../../../helpers/token");
 const sendMail = require("../../../helpers/sendMail");
 const RecoveryCode = require("../../../schema/RecoveryCode");
 const getFirstName = require("../../../helpers/retrieve_first_name");
+const PhotoGrapher = require("../../../schema/PhotoGrapher");
+const photographerSender = require("../../../helpers/photographersEmail");
+const welcome = require("../../../helpers/welcome");
+const onboarded = require("../../../helpers/onboarded");
 require("dotenv").config();
 
 // REGISTER ENDPOINT
@@ -55,15 +59,15 @@ router.post("/signup", async (req, res) => {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
       console.log(accessToken)
-      const mailBody = `
-    <h1>Hi ${full_name},</h1>
-    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-    <p>Kindly click on the link below to verify your email address.</p>
-    <p>This link expires in 15 minutes.</p>
-    <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-    `
+    //   const mailBody = `
+    // <h1>Hi ${full_name},</h1>
+    // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+    // <p>Kindly click on the link below to verify your email address.</p>
+    // <p>This link expires in 15 minutes.</p>
+    // <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    // `
       if (saveUser) {
-        await sendMail(email, mailBody)
+        await sendMail(email, welcome(accessToken))
 
         return res.json({ status: 200, message: "User created successfully" });
       }
@@ -80,15 +84,15 @@ router.post("/signup", async (req, res) => {
     try {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
-      const mailBody = `
-    <h1>Hi ${full_name},</h1>
-    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-    <p>Kindly click on the link below to verify your email address.</p>
-    <p>This link expires in 15 minutes.</p>
-    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-    `
+    //   const mailBody = `
+    // <h1>Hi ${full_name},</h1>
+    // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+    // <p>Kindly click on the link below to verify your email address.</p>
+    // <p>This link expires in 15 minutes.</p>
+    // <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    // `
       if (saveUser) {
-        await sendMail(email, mailBody).then(res => console.log("Email sent")).catch(err => console.log(err))
+        await sendMail(email, welcome(accessToken)).then(res => console.log("Email sent")).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
       }
 
@@ -119,7 +123,7 @@ router.post("/resend-token", async (req, res) => {
     <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
   if (emailExists) {
-    await sendMail(email, mailBody)
+    await sendMail(email, welcome(accessToken))
     return res.json({ status: 200, message: "User created successfully" });
   }
 })
@@ -135,6 +139,7 @@ router.get("/verify-email", async (req, res) => {
       const update = await User.updateOne({ _id: verified._id }, { $set: { verified: true } });
       if (update) {
         return res.sendFile(__dirname + '/public/index.html')
+        // onboarded(user[0]?.full_name)
         // return res.json({ status: 200, message: "Email verified successfully" });
       }
     }
@@ -336,6 +341,102 @@ router.post("/admin-signup", async (req, res) => {
     return res.json({ status: 400, message: err });
   }
 });
+
+
+// FOR PHOTOGRAPHERS
+
+// REGISTER PHOTOGRAPHER
+router.post("/register-photographer", async (req, res) => {
+  const { full_name, email, password } = req?.body;
+
+  // Validate Request
+  const { error } = registerValidation(req.body);
+  if (error) {
+    return res.json({
+      status: 400,
+      data: error.details[0].message.replace(/"/g, ""),
+    });
+  }
+
+  // Check if Email Exist
+  const emailExists = await PhotoGrapher.findOne({ email: email });
+  if (emailExists)
+    return res.json({ status: 400, message: "User already exists" });
+
+  const user = new PhotoGrapher({
+    full_name: full_name,
+    email: email,
+    password: encrypted(password),
+  });
+  try {
+    const saveUser = await user.save();
+    const { accessToken } = await generateTokens(saveUser);
+    // const mailBody = `
+    // <h1>Hi ${full_name?.split(" ")[0]},</h1>
+    // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+    // <p>Kindly click on the link below to verify your email address.</p>
+    // <p>This link expires in 24 hours.</p>
+    // <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    // `
+    if (saveUser) {
+      await photographerSender(email, welcome(accessToken)).then(res => console.log("Email sent")).catch(err => console.log(err))
+      return res.json({ status: 200, message: "User created successfully" });
+    }
+
+  } catch (error) {
+
+  }
+
+});
+
+
+// RESEND PHOTOGRAPHER TOKEN
+router.post("/resend-photographer-token", async (req, res) => {
+  const { email } = req?.body;
+  const { error } = emailValidation(req.body);
+  if (error) {
+    return res.json({ status: 400, data: error.details[0].message });
+  }
+
+  // Check if Email Exist
+  const emailExists = await PhotoGrapher.findOne({ email: email });
+  if (!emailExists)
+    return res.json({ status: 400, message: "User does not exist" });
+
+  const { accessToken } = await generateTokens(emailExists);
+  const mailBody = `
+    <h1>Hi ${emailExists.full_name},</h1>
+    <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+    <p>Kindly click on the link below to verify your email address.</p>
+    <p>This link expires in 24 hours.</p>
+    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    `
+  if (emailExists) {
+    await sendMail(email, mailBody)
+    return res.json({ status: 200, message: "User created successfully" });
+  }
+})
+
+// VERIFY PHOTOGRAPHER EMAIL
+router.get("/verify-photographer-email", async (req, res) => {
+  const token = req?.query?.token;
+  // if (!!token) return res.json({ status: 400, message: "Invalid token" });
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await PhotoGrapher.findOne({ _id: verified._id });
+    if (user) {
+      const update = await PhotoGrapher.updateOne({ _id: verified._id }, { $set: { verified: true } });
+      if (update) {
+        return res.sendFile(__dirname + '/public/index.html')
+        // return res.json({ status: 200, message: "Email verified successfully" });
+      }
+    }
+  } catch (error) {
+    return res.json({ status: 400, message: "Invalid token" });
+  }
+})
+
 
 
 module.exports = router;
