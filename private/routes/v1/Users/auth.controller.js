@@ -59,13 +59,13 @@ router.post("/signup", async (req, res) => {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
       console.log(accessToken)
-    //   const mailBody = `
-    // <h1>Hi ${full_name},</h1>
-    // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-    // <p>Kindly click on the link below to verify your email address.</p>
-    // <p>This link expires in 15 minutes.</p>
-    // <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-    // `
+      //   const mailBody = `
+      // <h1>Hi ${full_name},</h1>
+      // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+      // <p>Kindly click on the link below to verify your email address.</p>
+      // <p>This link expires in 15 minutes.</p>
+      // <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+      // `
       if (saveUser) {
         await sendMail(email, welcome(accessToken))
 
@@ -84,13 +84,13 @@ router.post("/signup", async (req, res) => {
     try {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
-    //   const mailBody = `
-    // <h1>Hi ${full_name},</h1>
-    // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-    // <p>Kindly click on the link below to verify your email address.</p>
-    // <p>This link expires in 15 minutes.</p>
-    // <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-    // `
+      //   const mailBody = `
+      // <h1>Hi ${full_name},</h1>
+      // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+      // <p>Kindly click on the link below to verify your email address.</p>
+      // <p>This link expires in 15 minutes.</p>
+      // <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+      // `
       if (saveUser) {
         await sendMail(email, welcome(accessToken)).then(res => console.log("Email sent")).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
@@ -137,11 +137,11 @@ router.get("/verify-email", async (req, res) => {
     const user = await User.findOne({ _id: verified._id });
     if (user) {
       const update = await User.updateOne({ _id: verified._id }, { $set: { verified: true } });
-      if (update) {
+      if (update)
         return res.sendFile(__dirname + '/public/index.html')
-        // onboarded(user[0]?.full_name)
-        // return res.json({ status: 200, message: "Email verified successfully" });
-      }
+      // onboarded(user[0]?.full_name)
+      // return res.json({ status: 200, message: "Email verified successfully" });
+
     }
   } catch (error) {
     return res.json({ status: 400, message: "Invalid token" });
