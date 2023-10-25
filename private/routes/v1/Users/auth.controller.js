@@ -67,7 +67,7 @@ router.post("/signup", async (req, res) => {
       <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
       `
       if (saveUser) {
-        await sendMail(email, mailBody)
+        await sendMail(email, welcome(accessToken))
 
         return res.json({ status: 200, message: "User created successfully" });
       }
@@ -92,7 +92,7 @@ router.post("/signup", async (req, res) => {
       <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
       `
       if (saveUser) {
-        await sendMail(email, mailBody).then(res => console.log("Email sent")).catch(err => console.log(err))
+        await sendMail(email, welcome(accessToken)).then(res => console.log("Email sent")).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
       }
 
