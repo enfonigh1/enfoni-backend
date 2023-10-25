@@ -59,15 +59,15 @@ router.post("/signup", async (req, res) => {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
       console.log(accessToken)
-      //   const mailBody = `
-      // <h1>Hi ${full_name},</h1>
-      // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-      // <p>Kindly click on the link below to verify your email address.</p>
-      // <p>This link expires in 15 minutes.</p>
-      // <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-      // `
+      const mailBody = `
+      <h1>Hi ${full_name},</h1>
+      <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+      <p>Kindly click on the link below to verify your email address.</p>
+      <p>This link expires in 15 minutes.</p>
+      <a href="http://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+      `
       if (saveUser) {
-        await sendMail(email, welcome(accessToken))
+        await sendMail(email, mailBody)
 
         return res.json({ status: 200, message: "User created successfully" });
       }
@@ -84,15 +84,15 @@ router.post("/signup", async (req, res) => {
     try {
       const saveUser = await user.save();
       const { accessToken } = await generateTokens(saveUser);
-      //   const mailBody = `
-      // <h1>Hi ${full_name},</h1>
-      // <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
-      // <p>Kindly click on the link below to verify your email address.</p>
-      // <p>This link expires in 15 minutes.</p>
-      // <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
-      // `
+      const mailBody = `
+      <h1>Hi ${full_name},</h1>
+      <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
+      <p>Kindly click on the link below to verify your email address.</p>
+      <p>This link expires in 15 minutes.</p>
+      <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+      `
       if (saveUser) {
-        await sendMail(email, welcome(accessToken)).then(res => console.log("Email sent")).catch(err => console.log(err))
+        await sendMail(email, mailBody).then(res => console.log("Email sent")).catch(err => console.log(err))
         return res.json({ status: 200, message: "User created successfully" });
       }
 
