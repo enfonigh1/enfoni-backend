@@ -19,6 +19,7 @@ const PhotoGrapher = require("../../../schema/PhotoGrapher");
 const photographerSender = require("../../../helpers/photographersEmail");
 const welcome = require("../../../helpers/welcome");
 const onboarded = require("../../../helpers/onboarded");
+const password_reset = require("../../../helpers/password_reset");
 require("dotenv").config();
 
 // REGISTER ENDPOINT
@@ -137,8 +138,11 @@ router.get("/verify-email", async (req, res) => {
     const user = await User.findOne({ _id: verified._id });
     if (user) {
       const update = await User.updateOne({ _id: verified._id }, { $set: { verified: true } });
-      if (update)
-        return res.sendFile(__dirname + '/public/index.html')
+      if (update) {
+        res.sendFile(__dirname + '/public/index.html')
+        sendMail(user?.email, onboarded(user?.full_name))
+        return
+      }
       // onboarded(user[0]?.full_name)
       // return res.json({ status: 200, message: "Email verified successfully" });
 
@@ -194,6 +198,18 @@ router.post("/signin", async (req, res) => {
 router.post("/recover_password", async (req, res) => {
   const { email } = req.body;
 
+  //simple validation of the email and password
+  const { error } = emailValidation(req.body);
+  if (error)
+    return res.json({ status: 400, message: error.details[0].message });
+  const isUserEmail = await User.findOne({ email: email });
+  if (!isUserEmail) {
+    return res.json({
+      status: 400,
+      message: "User does not exist. Please create an account instead",
+    });
+  }
+
   let code = `${uuid()}`.substring(0, 6).toUpperCase();
   let first_name = await getFirstName(email);
   let mail_body = `
@@ -207,7 +223,7 @@ router.post("/recover_password", async (req, res) => {
   //   return res.status(400).json({ message: "user email not provided." });
   // }
 
-  await sendMail(email, mail_body)
+  await sendMail(email, password_reset(code))
     .then(async (result) => {
       // set the code sent to the user
       // this will be validated against to check if user has permission to change

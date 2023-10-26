@@ -4,7 +4,7 @@ const sendMail = require("../../helpers/sendMail");
 const UserCode = require("../../schema/UserCode");
 
 async function updateUser(req) {
-  console.log(req?.body)
+  // console.log(req?.body)
   try {
     // const image_url = await uploadFile(req.file, "enfoni");
 
@@ -16,6 +16,7 @@ async function updateUser(req) {
     );
 
     const results = await User.findOne({ _id: req?.body?.id });
+    // console.log(results)
 
 
     if (result != null) {
@@ -26,8 +27,9 @@ async function updateUser(req) {
       sendMail(results?.email, mailBody).then(async (res) => {
         try {
 
-          const results = await UserCode.create({ id: req?.body?.id, code: req?.body?.id?.slice(0, 6)?.toUpperCase() })
-          if (results) {
+          const result = await UserCode.create({ id: req?.body?.id, code: req?.body?.id?.slice(0, 6)?.toUpperCase() })
+          console.log(result)
+          if (result) {
             return { status: 200, mesage: "success" };
           }
         } catch (error) {
