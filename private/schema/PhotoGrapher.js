@@ -33,6 +33,7 @@ const photoGrapherSchema = new mongoose.Schema({
         type: Boolean,
         required: false,
     },
+   
 });
 
 module.exports = mongoose.model('PhotoGrapher', photoGrapherSchema);

@@ -19,6 +19,7 @@ const registerValidation = (data) => {
     full_name: Joi.string().required(),
     email: Joi.string().min(6).required().email().required(),
     password: passwordComplexity(complexityOptions).required(),
+    usher: Joi.boolean(),
     college_name: Joi.string(),
     student_id: Joi.string().min(6),
     phone_number: Joi.string().min(10),

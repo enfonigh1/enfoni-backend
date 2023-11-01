@@ -3,64 +3,60 @@ const User = require("../../schema/User");
 require("dotenv").config();
 
 async function payment(req) {
-  const { email, amount } = req.body; // Corrected destructuring
-  const params = {
-    email: email,
-    amount: amount * 100,
-    currency: "GHS",
-    channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
-  };
-  const headers = {
-    Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
-    "Content-Type": "application/json",
-  };
-
+  const { provider, phone, amount } = req.body; // Corrected destructuring
+  // console.log(req?.body)
   try {
-    const response = await axios.post(
-      "https://api.paystack.co/transaction/initialize", // Corrected URL
-      params,
-      { headers }
-    );
-    return { ...response?.data }; // Use response.data to access the response body
+    const response = await axios.post("https://api.paystack.co/charge", {
+      amount: amount * 100,
+      email: "aopoku255@gmail.com",
+      currency: "GHS",
+      mobile_money: {
+        phone: phone,
+        provider: provider
+      }
+    }, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+    });
+
+    return { ...response }; // Log the response data for debugging
   } catch (error) {
-    console.error(error);
+    return { ...error?.response?.data }; // Log the error response for debugging
   }
 }
 
-async function verifyPaystackTransaction(reference) {
-  const headers = {
-    Authorization: "Bearer sk_test_d77ee1491d65f0139a0d0018e7f7f4c0a3500f94",
-    "Content-Type": "application/json",
-    "cache-control": "no-cache",
-  };
+// OTP
+async function SubmitOtp(req) {
+  const { otp, reference } = req.body; // Corrected destructuring
 
-  const options = {
-    headers,
-  };
+  try {
+    const response = await axios.post("https://api.paystack.co/charge/submit_otp", {
+      otp: otp,
+      reference: reference
+    }, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+    });
 
-  return new Promise((resolve, reject) => {
-    https
-      .get(
-        `https://api.paystack.co/transaction/verify/${reference}`,
-        options,
-        (response) => {
-          let responseData = "";
-
-          response.on("data", (chunk) => {
-            responseData += chunk;
-          });
-
-          response.on("end", () => {
-            resolve(responseData);
-          });
-        }
-      )
-      .on("error", (error) => {
-        reject(error);
-      });
-  });
+    return { ...response.data }; // Log the response data for debugging
+  } catch (error) {
+    return { ...error.response.data }; // Log the error response for debugging
+  }
 }
 
+
+// OTP
+async function checkPaymentStatus(req) {
+  const { reference } = req.body; // Corrected destructuring
+
+  try {
+    const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+    });
+
+    return { ...response.data }; // Log the response data for debugging
+  } catch (error) {
+    return { ...error.response.data }; // Log the error response for debugging
+  }
+}
 
 async function userInfo(req, res) {
   console.log(req?.params?.user_id)
@@ -87,4 +83,4 @@ async function fetchSingleUser(req, res) {
   }
 }
 
-module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser };
+module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus };

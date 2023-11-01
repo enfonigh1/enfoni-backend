@@ -24,11 +24,12 @@ require("dotenv").config();
 
 // REGISTER ENDPOINT
 router.post("/signup", async (req, res) => {
-  const { full_name, email, password } = req?.body;
+  const { full_name, email, password, usher } = req?.body;
   const college_name = req?.body?.college_name;
   const student_id = req?.body?.student_id;
   const phone_number = req?.body?.phone_number;
   const date_of_graduation = req?.body?.date_of_graduation;
+  console.log(req?.body)
 
 
   // Validate Request
@@ -81,6 +82,7 @@ router.post("/signup", async (req, res) => {
       full_name: full_name,
       email: email,
       password: encrypted(password),
+      usher: usher
     });
     try {
       const saveUser = await user.save();
@@ -405,6 +407,21 @@ router.post("/register-photographer", async (req, res) => {
 
 });
 
+// SAME DAY BOOKING
+
+router.post("same-day-booking", async (req, res) => {
+  // check if number exist
+  const { phone_number } = req?.body
+  const { frame_info } = req?.body
+  const numberExist = await User.find({ phone_number })
+  if (numberExist) return res.json({ status: 400, message: "User has already booked with this number" })
+
+  const results = new User({
+    ...req?.body,
+    frame: { ...frame_info }
+  })
+})
+
 
 // RESEND PHOTOGRAPHER TOKEN
 router.post("/resend-photographer-token", async (req, res) => {
@@ -425,7 +442,7 @@ router.post("/resend-photographer-token", async (req, res) => {
     <p>Thank you for registering with Enfonigh. We are excited to have you on board.</p>
     <p>Kindly click on the link below to verify your email address.</p>
     <p>This link expires in 24 hours.</p>
-    <a href="https://enfoni.cyclic.app/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
+    <a href="http://localhost:3001/api/v1/verify-email?token=${accessToken}" style="color: green;">Verify Email</a>
     `
   if (emailExists) {
     await sendMail(email, mailBody)

@@ -8,11 +8,11 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
+      required: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     college_name: {
       type: String,
@@ -93,6 +93,14 @@ const userSchema = new mongoose.Schema(
       required: false,
       default: false
     },
+
+    usher: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+
+    frame: {}
   },
   { timestamps: true }
 );
