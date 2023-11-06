@@ -4,11 +4,11 @@ require("dotenv").config();
 
 async function payment(req) {
   const { provider, phone, amount } = req.body; // Corrected destructuring
-  // console.log(req?.body)
+  console.log(req?.body)
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: "aopoku255@gmail.com",
+      email: "bniridgt10@gmail.com",
       currency: "GHS",
       mobile_money: {
         phone: phone,
@@ -18,7 +18,7 @@ async function payment(req) {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
 
-    return { ...response }; // Log the response data for debugging
+    return { ...response?.data }; // Log the response data for debugging
   } catch (error) {
     return { ...error?.response?.data }; // Log the error response for debugging
   }
@@ -45,14 +45,18 @@ async function SubmitOtp(req) {
 
 // OTP
 async function checkPaymentStatus(req) {
-  const { reference } = req.body; // Corrected destructuring
+  const { reference, id } = req.body; // Corrected destructuring
 
   try {
     const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
+    const results = await User.updateOne({ _id: id }, { ...req?.body })
+    if (results) {
 
-    return { ...response.data }; // Log the response data for debugging
+      return { ...response?.data }; // Log the response data for debugging
+    }
+
   } catch (error) {
     return { ...error.response.data }; // Log the error response for debugging
   }

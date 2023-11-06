@@ -20,6 +20,7 @@ const photographerSender = require("../../../helpers/photographersEmail");
 const welcome = require("../../../helpers/welcome");
 const onboarded = require("../../../helpers/onboarded");
 const password_reset = require("../../../helpers/password_reset");
+const Usher = require("../../../schema/Usher");
 require("dotenv").config();
 
 // REGISTER ENDPOINT
@@ -420,6 +421,11 @@ router.post("same-day-booking", async (req, res) => {
     ...req?.body,
     frame: { ...frame_info }
   })
+
+  if(results){
+    
+  }
+
 })
 
 
@@ -470,6 +476,21 @@ router.get("/verify-photographer-email", async (req, res) => {
   }
 })
 
+
+// USHER LOGIN WITH CODE
+router.post("/usher/login", async (req, res) => {
+  try {
+    const { code } = req?.body
+
+    // Check if user exist with code
+    const usher = await Usher.findOne({ code: code })
+    if (usher) {
+      return res.json({ status: 200, data: usher })
+    }
+  } catch (error) {
+    return res.json({ data: error.message })
+  }
+})
 
 
 module.exports = router;
