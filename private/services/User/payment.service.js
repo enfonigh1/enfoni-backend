@@ -1,6 +1,7 @@
 const axios = require("axios");
 const User = require("../../schema/User");
 require("dotenv").config();
+const { faker } = require("@faker-js/faker")
 
 async function payment(req) {
   const { provider, phone, amount } = req.body; // Corrected destructuring
@@ -8,7 +9,7 @@ async function payment(req) {
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: "bniridgt10@gmail.com",
+      email: faker.internet.email({ firstName: faker.person.firstName(), lastName: faker.person.lastName() }),
       currency: "GHS",
       mobile_money: {
         phone: phone,

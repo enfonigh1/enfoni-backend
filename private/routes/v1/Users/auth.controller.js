@@ -165,7 +165,8 @@ router.post("/signin", async (req, res) => {
 
   //check if email exists & comparing passwords
   const user = await User.findOne({ email: email });
-  if (!user) return res.json({ status: 400, message: "Invalid credentials" });
+  const photouser = await PhotoGrapher.findOne({ email: email });
+  if (!user || !photouser) return res.json({ status: 400, message: "Invalid credentials" });
 
   // Encrypt Password
   const validPass = await bcrypt.compareSync(password, user?.password);
