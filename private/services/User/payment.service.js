@@ -4,7 +4,7 @@ require("dotenv").config();
 const { faker } = require("@faker-js/faker")
 
 async function payment(req) {
-  const { provider, phone, amount } = req.body; // Corrected destructuring
+  const { provider, phone, amount, full_name, frame } = req.body; // Corrected destructuring
   console.log(req?.body)
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
@@ -44,7 +44,7 @@ async function SubmitOtp(req) {
 }
 
 
-// OTP
+// OTP SELECT FRAME
 async function checkPaymentStatus(req) {
   const { reference, id } = req.body; // Corrected destructuring
 
@@ -53,6 +53,26 @@ async function checkPaymentStatus(req) {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
     const results = await User.updateOne({ _id: id }, { ...req?.body })
+    if (results) {
+
+      return { ...response?.data }; // Log the response data for debugging
+    }
+
+  } catch (error) {
+    return { ...error.response.data }; // Log the error response for debugging
+  }
+}
+
+
+// SAME DAY BOOKIING 
+async function checkPaymentStatusSame(req) {
+  const { reference, id, full_name, frame } = req.body; // Corrected destructuring
+
+  try {
+    const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
+    });
+    const results = await User.create({ full_name: full_name, phone_number: phone, frame: frame })
     if (results) {
 
       return { ...response?.data }; // Log the response data for debugging
@@ -88,4 +108,4 @@ async function fetchSingleUser(req, res) {
   }
 }
 
-module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus };
+module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus, checkPaymentStatusSame };

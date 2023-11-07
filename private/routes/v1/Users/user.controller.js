@@ -2,7 +2,7 @@ const router = require("express").Router();
 const multer = require("multer");
 const { updateUser, pushCodeBook } = require("../../../services/User/user.service");
 const { verify } = require("../../../helpers/verifyToken");
-const { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus } = require("../../../services/User/payment.service");
+const { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus, checkPaymentStatusSame } = require("../../../services/User/payment.service");
 const storage = multer.memoryStorage();
 const upload = multer({ storage }).single("picture");
 const fileUpload = multer({ dest: "/tmp" }).single("file");
@@ -42,6 +42,14 @@ router.post("/submit-otp", async (req, res) => {
 router.post("/check-payment-status", async (req, res) => {
   try {
     return res.status(200).json(await checkPaymentStatus(req));
+  } catch (error) {
+
+  }
+});
+// CHECK IF PAYMENT IS MADE
+router.post("/check-payment-status-same", async (req, res) => {
+  try {
+    return res.status(200).json(await checkPaymentStatusSame(req));
   } catch (error) {
 
   }
