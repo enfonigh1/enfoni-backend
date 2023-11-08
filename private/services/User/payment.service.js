@@ -1,7 +1,6 @@
 const axios = require("axios");
 const User = require("../../schema/User");
 require("dotenv").config();
-const { faker } = require("@faker-js/faker")
 
 async function payment(req) {
   const { provider, phone, amount, full_name, frame } = req.body; // Corrected destructuring
