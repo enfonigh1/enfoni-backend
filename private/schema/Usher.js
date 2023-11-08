@@ -17,7 +17,8 @@ const usherSchema = new mongoose.Schema({
     paired_photographer: {
         type: mongoose.SchemaTypes.ObjectId,
         require: false
-    }
+    },
+
 }, { timestamps: true })
 
 module.exports = mongoose.model("usher", usherSchema)

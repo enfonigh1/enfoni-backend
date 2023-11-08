@@ -1,5 +1,6 @@
 const axios = require("axios");
 const User = require("../../schema/User");
+const Usher = require("../../schema/Usher");
 require("dotenv").config();
 
 async function payment(req) {
@@ -76,16 +77,26 @@ async function checkPaymentStatus(req) {
 
 // SAME DAY BOOKIING 
 async function checkPaymentStatusSame(req) {
-  const { reference, id, full_name, frame } = req.body; // Corrected destructuring
+  const { reference, payerinfo } = req.body; // Corrected destructuring
 
   try {
     const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
-    const results = await User.create({ full_name: full_name, phone_number: phone, frame: frame })
-    if (results) {
+    // const results = await User.create({ full_name: full_name, phone_number: phone, frame: frame })
+    // const increaseUsherCheckins = await Usher.findOne(code, { $inc: { checkins: 2 } })
+    const results = await new User({
+      full_name: payerinfo?.full_name,
+      phone_number: payerinfo?.phone,
+      frame: payerinfo?.frames
+    })
+    if (response?.data?.data?.status !== "success") {
+      return { message: "Please complete payment", status: 400 }
+    }
+    const saveUser = results.save()
+    if (saveUser && increaseUsherCheckins) {
 
-      return { ...response?.data }; // Log the response data for debugging
+      return { data: results, status: 200 }; // Log the response data for debugging
     }
 
   } catch (error) {

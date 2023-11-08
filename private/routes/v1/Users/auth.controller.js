@@ -423,8 +423,8 @@ router.post("same-day-booking", async (req, res) => {
     frame: { ...frame_info }
   })
 
-  if(results){
-    
+  if (results) {
+
   }
 
 })
@@ -487,6 +487,8 @@ router.post("/usher/login", async (req, res) => {
     const usher = await Usher.findOne({ code: code })
     if (usher) {
       return res.json({ status: 200, data: usher })
+    } else {
+      return res.json({ status: 400, message: "Invalid QR Code" })
     }
   } catch (error) {
     return res.json({ data: error.message })
