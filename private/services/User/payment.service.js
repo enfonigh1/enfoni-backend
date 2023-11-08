@@ -9,7 +9,7 @@ async function payment(req) {
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: faker.internet.email({ firstName: faker.person.firstName(), lastName: faker.person.lastName() }),
+      email: "info@enfonigh.com",
       currency: "GHS",
       mobile_money: {
         phone: phone,
