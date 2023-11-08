@@ -9,7 +9,7 @@ async function payment(req) {
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: "info@enfonigh.com",
+      email: "info1@enfonigh.com",
       currency: "GHS",
       mobile_money: {
         phone: phone,
@@ -37,9 +37,9 @@ async function SubmitOtp(req) {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
 
-    return { ...response.data }; // Log the response data for debugging
+    return { ...response.data, status: 200 }; // Log the response data for debugging
   } catch (error) {
-    return { ...error.response.data }; // Log the error response for debugging
+    return { ...error.response.data, status: 400 }; // Log the error response for debugging
   }
 }
 
@@ -53,11 +53,15 @@ async function checkPaymentStatus(req) {
     const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
+    console.log(response)
     const results = await new User({
       full_name: payerinfo?.full_name,
       phone_number: payerinfo?.phone,
       frame: payerinfo?.frames
     })
+    if (response?.data?.data?.status !== "success") {
+      return { message: "Please complete payment", status: 400 }
+    }
     const saveUser = results.save()
     if (saveUser) {
 
