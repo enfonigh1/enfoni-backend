@@ -10,7 +10,7 @@ async function payment(req) {
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: "info1@enfonigh.com",
+      email: "info2@enfonigh.com",
       currency: "GHS",
       mobile_money: {
         phone: phone,
