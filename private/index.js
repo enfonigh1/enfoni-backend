@@ -7,6 +7,7 @@ const routes = require("./routes/v1/router");
 const session = require("express-session");
 const cookieParser = require("cookie-parser")
 app.use(express.json());
+app.use(cors());
 const keys = require("../keys.json");
 require("dotenv").config();
 
@@ -14,7 +15,6 @@ app.set("keys", keys.enfoni);
 
 const PORT = process.env.PORT || 3001;
 require("./database/database")(app.get("keys").db_name);
-app.use(cors());
 app.use(
   session({
     secret: process.env.JWT_SECRET,
