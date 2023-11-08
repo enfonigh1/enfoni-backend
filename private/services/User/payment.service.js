@@ -5,6 +5,7 @@ require("dotenv").config();
 async function payment(req) {
   const { provider, phone, amount, full_name, frame } = req.body; // Corrected destructuring
   console.log(req?.body)
+  // const random = Math.random()
   try {
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
@@ -45,16 +46,22 @@ async function SubmitOtp(req) {
 
 // OTP SELECT FRAME
 async function checkPaymentStatus(req) {
-  const { reference, id } = req.body; // Corrected destructuring
+  const { reference, payerinfo } = req.body; // Corrected destructuring
+  console.log(req?.body)
 
   try {
     const response = await axios.get(`https://api.paystack.co/charge/${reference}`, {
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET}` }
     });
-    const results = await User.updateOne({ _id: id }, { ...req?.body })
-    if (results) {
+    const results = await new User({
+      full_name: payerinfo?.full_name,
+      phone_number: payerinfo?.phone,
+      frame: payerinfo?.frames
+    })
+    const saveUser = results.save()
+    if (saveUser) {
 
-      return { ...response?.data }; // Log the response data for debugging
+      return { data: results, status: 200 }; // Log the response data for debugging
     }
 
   } catch (error) {
