@@ -4,8 +4,8 @@ const app = express();
 const cors = require("cors");
 const router = require("express").Router();
 const routes = require("./routes/v1/router");
-const session = require("express-session");
-const cookieParser = require("cookie-parser")
+// const session = require("express-session");
+// const cookieParser = require("cookie-parser")
 app.use(express.json());
 const keys = require("../keys.json");
 require("dotenv").config();
@@ -21,15 +21,15 @@ var corsOptions = {
 app.use(cors());
 const PORT = process.env.PORT || 3001;
 require("./database/database")(app.get("keys").db_name);
-app.use(
-  session({
-    secret: process.env.JWT_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.JWT_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
-app.use(cookieParser())
+// app.use(cookieParser())
 app.use("", routes);
 
 app.listen(PORT, console.log(`APP RUNNING ON ${PORT}`));

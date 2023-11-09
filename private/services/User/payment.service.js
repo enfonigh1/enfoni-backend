@@ -2,15 +2,17 @@ const axios = require("axios");
 const User = require("../../schema/User");
 const Usher = require("../../schema/Usher");
 require("dotenv").config();
+const mongoose = require("mongoose")
 
 async function payment(req) {
   const { provider, phone, amount, full_name, frame } = req.body; // Corrected destructuring
   console.log(req?.body)
   // const random = Math.random()
   try {
+    let randomNumber = Math.floor(Math.random() * 900) + 1
     const response = await axios.post("https://api.paystack.co/charge", {
       amount: amount * 100,
-      email: "info1@enfonigh.com",
+      email: `info${randomNumber}@enfonigh.com`,
       currency: "GHS",
       mobile_money: {
         phone: phone,
@@ -129,4 +131,37 @@ async function fetchSingleUser(req, res) {
   }
 }
 
-module.exports = { payment, userInfo, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus, checkPaymentStatusSame };
+async function usherCheckins(req, res) {
+  const { code } = req?.body;
+  try {
+    if (!code || code.length < 6) {
+      return { status: 400, message: 'Code must be at least 6 characters long' };
+    }
+
+    // Convert the first 6 characters of 'code' into a MongoDB ObjectId
+    // const objectIdPrefix = code.slice(0, 6);
+    const objectId = new mongoose.Types.ObjectId(code);
+
+    // Find users whose ObjectId starts with the first 6 characters of 'code'
+    const results = await User.find({
+      _id: { $gte: objectId, $lt: objectId + 1 }
+    });
+
+    if (results.length === 0) {
+      return { status: 404, message: 'No matching users found' };
+    }
+
+    // Map the results to return only the necessary user data
+    const data = results.map(item => ({
+      id: item._id,
+      username: item.username,
+      // Add more fields as needed
+    }));
+
+    return { data };
+  } catch (error) {
+    return { status: 500, message: error?.message };
+  }
+}
+
+module.exports = { payment, userInfo, usherCheckins, fetchAllUsers, fetchSingleUser, SubmitOtp, checkPaymentStatus, checkPaymentStatusSame };
