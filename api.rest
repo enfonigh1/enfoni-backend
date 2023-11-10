@@ -1,9 +1,7 @@
-POST http://localhost:3001/api/v1/update-user
+POST http://localhost:3001/api/v1/same-day-booking
 Content-Type: application/json
 
 {
-
-    "email": "aopoku265@gmail.com",
-    "password": "Proff@0545"
-   
+    "full_name": "Andrews",
+    "code": "123456"
 }

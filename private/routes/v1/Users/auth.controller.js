@@ -21,6 +21,7 @@ const welcome = require("../../../helpers/welcome");
 const onboarded = require("../../../helpers/onboarded");
 const password_reset = require("../../../helpers/password_reset");
 const Usher = require("../../../schema/Usher");
+const SameDayBooking = require("../../../schema/SameDayBooking");
 require("dotenv").config();
 
 // REGISTER ENDPOINT
@@ -411,22 +412,29 @@ router.post("/register-photographer", async (req, res) => {
 
 // SAME DAY BOOKING
 
-router.post("same-day-booking", async (req, res) => {
+router.post("/same-day-booking", async (req, res) => {
   // check if number exist
-  const { phone_number } = req?.body
-  const { frame_info } = req?.body
-  const numberExist = await User.find({ phone_number })
-  if (numberExist) return res.json({ status: 400, message: "User has already booked with this number" })
-
-  const results = new User({
-    ...req?.body,
-    frame: { ...frame_info }
+  const {full_name, code, frame} = req?.body
+  console.log(req?.body)
+  const sameDay = await new SameDayBooking({
+    full_name: full_name,
+    code: code,
+    frame: frame
   })
 
-  if (results) {
-
-  }
-
+  // try {
+   const sameDayBook = await sameDay.save()
+   
+   if(sameDayBook){
+    return res.json({status: 200, message: "success"})
+   }
+    
+    
+  // } catch (error) {
+  //   // return {status: 400, message: error?.message}
+  // }
+  
+  
 })
 
 
