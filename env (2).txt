@@ -1,0 +1,18 @@
+JWT_SECRET=a3fd3aeaed401fb6716966b8dfdac2891f019b815e1684c000f51f4efb410db987d2edf4fbd59d0c73219c238cab6b694eb9665e5ffa819c212cdd4dbbaf0afd
+SENDER_EMAIL=info@enfonigh.com
+SENDER_EMAIL2=register@enfonigh.com
+# EMAIL_PASS=rgzugealkhxslsau
+# EMAIL_PASS=@RBH3kDjt8Ca5kx
+EMAIL_PASS=xml@08642$
+MONGODB_URI=mongodb://127.0.0.1:27017
+# MONGODB_URI=mongodb+srv://enfoni:7tzbFgy8OChLgrsE@cluster0.sqzruht.mongodb.net
+apiKey=AIzaSyBgtnqt-ef57qjgiN2S8ReJiSYwauVku_4
+authDomain=enfoni-82184.firebaseapp.com
+projectId=enfoni-82184
+storageBucket=enfoni-82184.appspot.com
+messagingSenderId=243995139653
+appId=1:243995139653:web:308fa6fe96e1a646824d2c
+measurementId=G-EYYWMEK7Y8
+PAYSTACK_SECRET=sk_live_576d2286ce06b1c22f2eb98e046c14d767f8abeb
+# PAYSTACK_SECRET=sk_test_0bcedca22ded31472506b9aa3c246e57c9aa6eda
+ 
